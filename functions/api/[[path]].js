@@ -129,7 +129,7 @@ function resolveModel(incomingModel, env) {
       if (modelStr && map[modelStr]) {
         return map[modelStr];
       }
-      if (!modelStr && map['default']) {
+      if ((!modelStr || modelStr === 'default') && map['default']) {
         return map['default'];
       }
     } catch (e) {
@@ -143,12 +143,15 @@ function resolveModel(incomingModel, env) {
     if (env[envKey]) {
       return env[envKey];
     }
-    // 前端传递了具体模型标识且无特殊映射，直接使用
-    return modelStr;
   }
 
-  // 3. 兜底使用单模型变量 API_MODEL
-  return env.API_MODEL || undefined;
+  // 3. 兜底使用单模型变量 API_MODEL (当 model 为 default、未填或无特定映射时)
+  if (env.API_MODEL && (!modelStr || modelStr === 'default')) {
+    return env.API_MODEL;
+  }
+
+  // 4. 前端传递了具体模型标识且无特殊映射，直接使用，或再次兜底 env.API_MODEL
+  return modelStr || env.API_MODEL || undefined;
 }
 
 /**
